@@ -1,9 +1,10 @@
 /**
- * This file is part of Fidus Writer <http://www.fiduswriter.org>
+ * @file Helper functions to deal with book printing.
+ * @copyright This file is part of <a href='http://www.fiduswriter.org'>Fidus Writer</a>.
  *
- * Copyright (C) 2013 Takuto Kojima, Johannes Wilm
+ * Copyright (C) 2013 Takuto Kojima, Johannes Wilm.
  *
- * This program is free software: you can redistribute it and/or modify
+ * @license This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
@@ -14,12 +15,16 @@
  * GNU Affero General Public License for more details.
  *
  * You should have received a copy of the GNU Affero General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program.  If not, see <a href='http://www.gnu.org/licenses'>http://www.gnu.org/licenses</a>.
  *
  */
 
 (function () {
     var exports = this,
+    /** 
+    * Helper functions for the book print page. TODO 
+    * @namespace printHelpers
+    */
         printHelpers = {}, documentOwners=[];
         
     var pageSizes = {
@@ -50,6 +55,7 @@
         theBook = aBook;
         theBook.settings = jQuery.parseJSON(theBook.settings);
         theBook.metadata = jQuery.parseJSON(theBook.metadata);
+        printHelpers.setDocumentStyle(theBook.settings.documentstyle);
         for (i = 0; i < theBook.chapters.length; i++) {
             theBook.chapters[i].metadata = jQuery.parseJSON(theBook.chapters[
                 i].metadata);
@@ -110,10 +116,21 @@
             pagination.initiate();
             pagination.applyBookLayout();
             jQuery("#pagination-contents").addClass('user-contents');
-            jQuery('head title').html(jQuery('#document-title')[0].innerText);
+            jQuery('head title').html(jQuery('#document-title')[0].textContent);
         });
         
         
+    };
+    
+    printHelpers.setDocumentStyle = function (theValue) {
+        var documentStyleLink = document.getElementById('document-style-link'),
+            newDocumentStyleLink = document.createElement('link');
+        newDocumentStyleLink.setAttribute("rel", "stylesheet");
+        newDocumentStyleLink.setAttribute("type", "text/css");
+        newDocumentStyleLink.setAttribute("id", "document-style-link");
+        newDocumentStyleLink.setAttribute("href", staticUrl+'css/document/'+theValue+'.css');
+        
+        documentStyleLink.parentElement.replaceChild(newDocumentStyleLink, documentStyleLink);        
     };
 
 

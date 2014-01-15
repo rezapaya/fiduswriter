@@ -16,9 +16,11 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import json
+
 from django.shortcuts import render_to_response
 from django.http import HttpResponse, HttpRequest
-from django.utils import simplejson, timezone
+from django.utils import timezone
 from django.contrib.auth.decorators import login_required
 from django.core.context_processors import csrf
 from django.template import RequestContext
@@ -32,8 +34,8 @@ from django.core.mail import send_mail
 from book.models import Book, BookAccessRight, Chapter
 from book.forms import BookForm
 
-from text.models import AccessRight
-from text.views import documents_list
+from document.models import AccessRight
+from document.views import documents_list
 
 from avatar.util import get_primary_avatar, get_default_avatar_url
 from avatar.templatetags.avatar_tags import avatar_url
@@ -90,7 +92,7 @@ def get_book_js(request):
     response={}
     status = 405
     if request.is_ajax() and request.method == 'POST':
-            book_id = simplejson.loads(request.POST['id'])
+            book_id = json.loads(request.POST['id'])
             book = Book.objects.filter(id=book_id).filter(Q(owner=request.user) | Q(bookaccessright__user=request.user))
             # TODO: Is it really enough to check if the number of chapters 
             # owned by or with access rights by the current user is smaller 
@@ -117,7 +119,7 @@ def get_book_js(request):
                 status = 200
             
     return HttpResponse(
-        simplejson.dumps(response),
+        json.dumps(response),
         content_type = 'application/json; charset=utf8',
         status=status
     )    
@@ -175,13 +177,15 @@ def get_booklist_js(request):
         response['user']['avatar']=avatar_url(request.user,80)            
         response['access_rights'] = get_accessrights(BookAccessRight.objects.filter(book__owner=request.user))
     return HttpResponse(
-        simplejson.dumps(response),
+        json.dumps(response),
         content_type = 'application/json; charset=utf8',
         status=status
     )
 
 def add_chapters(book_instance, chapters, status, this_user):
     for chapter in chapters:
+        print chapter
+        print book_instance.id
         new_chapter = Chapter(book=book_instance,text_id=chapter['text'],number=chapter['number'],part=chapter['part'])
         new_chapter.save()
         # If the current user is the owner of the chapter-document, make sure that everyone with access to the book gets at least read access.
@@ -189,13 +193,13 @@ def add_chapters(book_instance, chapters, status, this_user):
             for bar in BookAccessRight.objects.filter(book=book_instance):
                 if len(new_chapter.text.accessright_set.filter(user=bar.user))==0:
                     AccessRight.objects.create(
-                                text_id = new_chapter.text.id,
+                                document_id = new_chapter.text.id,
                                 user_id = bar.user.id,
                                 rights= 'r',
                             )
             if this_user != book_instance.owner and len(new_chapter.text.accessright_set.filter(user=book_instance.owner))==0:
                 AccessRight.objects.create(
-                                text_id = new_chapter.text.id,
+                                document_id = new_chapter.text.id,
                                 user_id = book_instance.owner.id,
                                 rights= 'r',
                             )
@@ -207,12 +211,12 @@ def save_js(request):
     response = {}
     status = 405
     if request.is_ajax() and request.method == 'POST':
-        the_book = simplejson.loads(request.POST['the_book'])
+        the_book = json.loads(request.POST['the_book'])
         the_chapters = the_book.pop('chapters')
        # if the_book['cover_image']==False:
        #     the_book.pop('cover_image')
-        the_book['metadata']=simplejson.dumps(the_book['metadata'])
-        the_book['settings']=simplejson.dumps(the_book['settings'])
+        the_book['metadata']=json.dumps(the_book['metadata'])
+        the_book['settings']=json.dumps(the_book['settings'])
         if the_book['id'] == 0:
             # We are dealing with a new book that still has not obtained an
             # ID.
@@ -231,7 +235,7 @@ def save_js(request):
                 response['added'] = date_obj.strftime(date_format)
                 date_obj = dateutil.parser.parse(str(form.instance.updated))
                 response['updated'] = date_obj.strftime(date_format)
-                status = add_chapters(form.instance,the_chapters, status, request.user)
+                status = add_chapters(form.instance, the_chapters, status, request.user)
             else:
                 response['errors'] = form.errors 
                 
@@ -269,7 +273,7 @@ def save_js(request):
                     status = 403
             
     return HttpResponse(
-        simplejson.dumps(response),
+        json.dumps(response),
         content_type = 'application/json; charset=utf8',
         status=status
     )
@@ -286,7 +290,7 @@ def delete_js(request):
         book.delete()
         status = 200
     return HttpResponse(
-        simplejson.dumps(response),
+        json.dumps(response),
         content_type = 'application/json; charset=utf8',
         status=status
     )            
@@ -369,7 +373,7 @@ def access_right_save_js(request):
                         # give read access to the chapter documents the collaborator.
                         if text.owner == request.user and len(text.accessright_set.filter(user_id=collaborator_id)) == 0:
                             AccessRight.objects.create(
-                                text_id = text.id,
+                                document_id = text.id,
                                 user_id = collaborator_id,
                                 rights= 'r',
                             )
@@ -377,7 +381,7 @@ def access_right_save_js(request):
         response['access_rights'] = get_accessrights(BookAccessRight.objects.filter(book__owner=request.user))
         status = 201
     return HttpResponse(
-        simplejson.dumps(response),
+        json.dumps(response),
         content_type = 'application/json; charset=utf8',
         status=status
     )

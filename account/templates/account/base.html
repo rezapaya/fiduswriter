@@ -34,11 +34,11 @@
         <link rel="stylesheet" href="{{ STATIC_URL }}css/registration.css" type="text/css" />
         {% endcompress %}
 
-        <script type="text/javascript" src="{{ MODERNIZR_URL }}"></script>
+        <!--script type="text/javascript" src="{{ MODERNIZR_URL }}"></script-->
         <script type="text/javascript" src="{{ JQUERY_URL }}"></script>
 
         {% compress js %}
-        <script type="text/javascript" src="{{ STATIC_URL }}js/csfr.js"></script>
+        <script type="text/javascript" src="{{ STATIC_URL }}js/csrf.js"></script>
         {% endcompress %}
         <script type="text/javascript" src="/jsi18n/"></script>
         <script>
@@ -77,6 +77,6 @@
             {% endblock extra_body %}
         </div>
         {% include "footer.html" %}
-        {% include "beta/feedback.html" %}
+        {% include "feedback/feedback.html" %}
     </body>
 </html>

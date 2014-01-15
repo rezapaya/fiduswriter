@@ -1,9 +1,10 @@
 /**
- * This file is part of Fidus Writer <http://www.fiduswriter.org>
+ * @file Book access rights templates.
+ * @copyright This file is part of <a href='http://www.fiduswriter.org'>Fidus Writer</a>.
  *
- * Copyright (C) 2013 Takuto Kojima, Johannes Wilm
+ * Copyright (C) 2013 Takuto Kojima, Johannes Wilm.
  *
- * This program is free software: you can redistribute it and/or modify
+ * @license This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
@@ -14,10 +15,11 @@
  * GNU Affero General Public License for more details.
  *
  * You should have received a copy of the GNU Affero General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program.  If not, see <a href='http://www.gnu.org/licenses'>http://www.gnu.org/licenses</a>.
  *
  */
 
+/** A template for the book access rights overview */
 var tmp_book_access_right_overview = _.template('\
     <div id="access-rights-dialog" title="<%- dialogHeader %>">\
         <div id="my-contacts" class="fw-ar-container">\
@@ -47,6 +49,7 @@ var tmp_book_access_right_overview = _.template('\
             </table>\
         </div>\
     </div>');
+/** A template for the book collaboration pane */
 var tmp_book_collaborators = _.template('<% _.each(collaborators, function(collaborator) { %>\
         <tr id="collaborator-<%- collaborator.user_id %>" data-id="<%- collaborator.user_id %>"\
         class="collaborator-tr <%- collaborator.rights %>" data-right="<%- collaborator.rights %>">\

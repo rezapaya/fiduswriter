@@ -1,3 +1,25 @@
+/**
+ * @file Handles the user profile page.
+ * @copyright This file is part of <a href='http://www.fiduswriter.org'>Fidus Writer</a>.
+ *
+ * Copyright (C) 2013 Takuto Kojima, Johannes Wilm.
+ *
+ * @license This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <a href='http://www.gnu.org/licenses'>http://www.gnu.org/licenses</a>.
+ *
+ */
+
+
 $(document).ready(function() {
     var changeAvatarDialog = function() {
         $('body').append(tmp_change_avatar_dialog   );
@@ -402,8 +424,8 @@ $(document).ready(function() {
     }
 
     jQuery.addDropdownBox($('#edit-avatar-btn'), $('#edit-avatar-pulldown'));
-    jQuery('.change-avatar').bind('click', changeAvatarDialog);
-    jQuery('.delete-avatar').bind('click', deleteAvatarDialog);
+    jQuery('.change-avatar').bind('mousedown', changeAvatarDialog);
+    jQuery('.delete-avatar').bind('mousedown', deleteAvatarDialog);
     jQuery('#submit-profile').bind('click', saveProfile);
     jQuery('#delete-account').bind('click', deleteUserDialog);
     jQuery('#fw-edit-profile-pwd').bind('click',changePwdDialog);

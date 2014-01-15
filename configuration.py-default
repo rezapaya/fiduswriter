@@ -32,7 +32,7 @@ DEBUG = False
 TEMPLATE_DEBUG = DEBUG
 
 SERVER_INFO = {
-    # This determines whether the server is used for testing and will let the users 
+    # This determines whether the server is used for testing and will let the users know
     # upon signup know that their documents may disappear.  
     'TEST_SERVER': True,
     # This is the contact email that will be shown in various places all over the site.
@@ -45,16 +45,17 @@ ADMINS = (
 
 MANAGERS = ADMINS
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.', # Add 'postgresql_psycopg2', 'mysql', 'sqlite3' or 'oracle'.
-        'NAME': '',                      # Or path to database file if using sqlite3.
-        'USER': '',                      # Not used with sqlite3.
-        'PASSWORD': '',                  # Not used with sqlite3.
-        'HOST': '',                      # Set to empty string for localhost. Not used with sqlite3.
-        'PORT': '',                      # Set to empty string for default. Not used with sqlite3.
-    }
-}
+#DATABASES = {
+#    'default': {
+#        'ENGINE': 'django.db.backends.', # Add 'postgresql_psycopg2', 'mysql', 'sqlite3' or 'oracle'.
+#        'NAME': '',                      # Or path to database file if using sqlite3.
+#        'USER': '',                      # Not used with sqlite3.
+#        'PASSWORD': '',                  # Not used with sqlite3.
+#        'HOST': '',                      # Set to empty string for localhost. Not used with sqlite3.
+#        'PORT': '',                      # Set to empty string for default. Not used with sqlite3.
+#        'CONN_MAX_AGE': 15               # The max time in seconds a database connection should wait for a subsequent request. 
+#    }
+#}
 
 # Send emails using an SMTP server
 #EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
@@ -68,7 +69,16 @@ DATABASES = {
 # Make this unique, and don't share it with anybody. Change the default string.
 SECRET_KEY = '2ouq2zgw5y-@w+t6!#zf#-z1inigg7$lg3p%8e3kkob1bf$#p4'
 
-
+# Use Redis for caching
+#CACHES = {
+#    "default": {
+#        "BACKEND": "redis_cache.cache.RedisCache",
+#        "LOCATION": "127.0.0.1:6379:1",
+#        "OPTIONS": {
+#            "CLIENT_CLASS": "redis_cache.client.DefaultClient",
+#        }
+#    }
+#}
 
 
 
@@ -90,11 +100,11 @@ INSTALLED_APPS += (
 
 # Location of commonly used Js libraries. Here the local version is given. For deployment a version on the net is better.
 JS_LOCATIONS = {
-    'JQUERY_URL': STATIC_URL + 'js/libs/jquery-1.9.1.js',
-    'JQUERYMIGRATE_URL': STATIC_URL + 'js/libs/jquery-migrate-1.1.1.js',
+    'JQUERY_URL': STATIC_URL + 'js/libs/jquery-2.0.3.js',
+    'JQUERYMIGRATE_URL': STATIC_URL + 'js/libs/jquery-migrate-1.2.1.js',
     'JQUERYUI_URL': STATIC_URL + 'js/libs/jquery-ui-1.10.1.custom.js',
-    'UNDERSCOREJS_URL': STATIC_URL + 'js/libs/underscore-1.4.4-min.js',
-    'MODERNIZR_URL': STATIC_URL + 'js/libs/modernizr.js',
+    'UNDERSCOREJS_URL': STATIC_URL + 'js/libs/underscore-1.5.2.js',
+    'MODERNIZR_URL': STATIC_URL + 'js/libs/modernizr-2.6.3.js',
     'MATHJAX_URL': STATIC_URL + 'js/libs/mathjax/MathJax.js',
     }
 

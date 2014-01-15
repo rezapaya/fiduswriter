@@ -16,18 +16,18 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import json
 from time import mktime
 
 from django.shortcuts import render_to_response
 from django.contrib.auth.decorators import login_required
 from django.core.context_processors import csrf
 from django.template import RequestContext
-from django.utils import simplejson
 from django.http import HttpResponse
 from django.contrib.auth.models import User
 from django.core.serializers.python import Serializer
 
-from text.models import AccessRight
+from document.models import AccessRight
 from usermedia.models import Image, ImageCategory
 
 class SimpleSerializer(Serializer):
@@ -66,10 +66,9 @@ def save_js(request):
             image.image_cat = request.POST['imageCat']
         if 'image' in request.FILES:
             image.image = request.FILES['image']
-
         image.save()
         response['values'] = {
-            'pk': image.id,
+            'pk': image.pk,
             'title': image.title,
             'image': image.image.url,
             'file_type': image.file_type,
@@ -82,7 +81,7 @@ def save_js(request):
             response['values']['height'] = image.height
             response['values']['width'] = image.width
     return HttpResponse(
-        simplejson.dumps(response),
+        json.dumps(response),
         content_type = 'application/json; charset=utf8',
         status=status
     )            
@@ -107,7 +106,7 @@ def check_access_rights(other_user_id, this_user):
         has_access = True
     elif other_user_id == this_user.id:
         has_access = True
-    elif AccessRight.objects.filter(text__owner=other_user_id, user=this_user).count() > 0:
+    elif AccessRight.objects.filter(document__owner=other_user_id, user=this_user).count() > 0:
         has_access = True
     return has_access   
 
@@ -138,7 +137,7 @@ def images_js(request):
             response['images'] = []
             for image in images :
                 field_obj = {
-                    'pk': image.id,
+                    'pk': image.pk,
                     'title': image.title,
                     'image': image.image.url,
                     'file_type': image.file_type,
@@ -154,7 +153,7 @@ def images_js(request):
             
 
     return HttpResponse(
-        simplejson.dumps(response),
+        json.dumps(response),
         content_type = 'application/json; charset=utf8',
         status=status
     )
@@ -184,7 +183,7 @@ def save_category_js(request):
         status = 201
         
     return HttpResponse(
-        simplejson.dumps(response),
+        json.dumps(response),
         content_type = 'application/json; charset=utf8',
         status=status
     )

@@ -37,7 +37,7 @@
         {% endcompress %}
 
         <script type="text/javascript" src="/jsi18n/"></script>
-        <script type="text/javascript" src="{{ MODERNIZR_URL }}"></script>
+        <!--script type="text/javascript" src="{{ MODERNIZR_URL }}"></script-->
         <script type="text/javascript" src="{{ UNDERSCOREJS_URL }}"></script>
         <script type="text/javascript" src="{{ JQUERY_URL }}"></script>
         <script type="text/javascript" src="{{ JQUERYUI_URL }}"></script>
@@ -53,7 +53,7 @@
             }
         </script>
         {% compress js %}
-        <script type="text/javascript" src="{{ STATIC_URL }}js/csfr.js"></script>
+        <script type="text/javascript" src="{{ STATIC_URL }}js/csrf.js"></script>
         <script type="text/javascript" src="{{ STATIC_URL }}js/common.js"></script>
         <script type="text/javascript" src="{{ STATIC_URL }}js/menubase.js"></script>
         {% endcompress %}
@@ -129,7 +129,7 @@
             </ul>
         </div>
 
-        {% include "beta/feedback.html" %}
+        {% include "feedback/feedback.html" %}
 
     </body>
 </html>

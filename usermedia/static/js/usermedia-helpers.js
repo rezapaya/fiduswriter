@@ -1,9 +1,10 @@
 /**
- * This file is part of Fidus Writer <http://www.fiduswriter.org>
+ * @file Sets up the user media page.
+ * @copyright This file is part of <a href='http://www.fiduswriter.org'>Fidus Writer</a>.
  *
- * Copyright (C) 2013 Takuto Kojima, Johannes Wilm
+ * Copyright (C) 2013 Takuto Kojima, Johannes Wilm.
  *
- * This program is free software: you can redistribute it and/or modify
+ * @license This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
@@ -14,12 +15,15 @@
  * GNU Affero General Public License for more details.
  *
  * You should have received a copy of the GNU Affero General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program.  If not, see <a href='http://www.gnu.org/licenses'>http://www.gnu.org/licenses</a>.
  *
  */
 
 (function () {
     var exports = this,
+ /** Helper functions for user added images/SVGs. TODO
+  * @namespace usermediaHelpers
+  */
         usermediaHelpers = {};
 
     usermediaHelpers.createImage = function (post_data) {
@@ -181,7 +185,7 @@
 
         formValues.append('id', id);
 
-        jQuery('.fw-meida-form').each(function () {
+        jQuery('.fw-media-form').each(function () {
             var $this = jQuery(this);
             var the_name = $this.attr('name') || $this.attr('data-field-name');
             var the_type = $this.attr('type') || $this.attr('data-type');
@@ -252,7 +256,7 @@
             'title': title,
             'thumbnail': thumbnail,
             'image': image,
-            'categories': tmp_usermedia_upload_categoriy({
+            'categories': tmp_usermedia_upload_category({
                 'categories': iCats,
                 'fieldTitle': gettext('Select categories')
             })
@@ -441,7 +445,7 @@
 
         if (0 < $tr.size()) { //if the image entry exists, update
             $tr.replaceWith(tmp_usermedia_table({
-                'id': pk,
+                'pk': pk,
                 'cats': image_info.cats,
                 'file_type': file_type,
                 'title': image_info.title,
@@ -453,7 +457,7 @@
             }));
         } else { //if this is the new image, append
             jQuery('#imagelist > tbody').append(tmp_usermedia_table({
-                'id': pk,
+                'pk': pk,
                 'cats': image_info.cats,
                 'file_type': file_type,
                 'title': image_info.title,
@@ -481,7 +485,6 @@
                     response.images[i].image = response.images[i].image.split('?')[0];
                     anImageDB[response.images[i]['pk']] = response.images[
                         i];
-                    console.log(anImageDB[response.images[i]['pk']]);
                 }
                 if (callback) {
                     callback(anImageDB);
@@ -576,7 +579,7 @@
 
         var autocomplete_tags = [];
         jQuery('#imagelist .fw-searchable').each(function() {
-            autocomplete_tags.push(this.innerText);
+            autocomplete_tags.push(this.textContent);
         });
         autocomplete_tags = _.uniq(autocomplete_tags);
         jQuery("#imagelist_filter input").autocomplete({
@@ -604,7 +607,7 @@
         //open dropdown for image category
         $.addDropdownBox(jQuery('#image-category-btn'), jQuery(
             '#image-category-pulldown'));
-        jQuery(document).on('click', '#image-category-pulldown li > span',
+        jQuery(document).on('mousedown', '#image-category-pulldown li > span',
             function () {
                 jQuery('#image-category-btn > label').html(jQuery(this).html());
                 jQuery('#image-category').val(jQuery(this).attr('data-id'));
@@ -633,7 +636,7 @@
         $.addDropdownBox(jQuery('#select-action-dropdown'), jQuery(
             '#action-selection-pulldown'));
         //submit image actions
-        jQuery('#action-selection-pulldown li > span').bind('click', function () {
+        jQuery('#action-selection-pulldown li > span').bind('mousedown', function () {
             var action_name = jQuery(this).attr('data-action'),
                 ids = [];
             if ('' == action_name || 'undefined' == typeof (action_name))

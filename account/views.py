@@ -16,22 +16,37 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import json
+
 from django.http import HttpResponseRedirect
 from django.http import HttpResponse
 from django.contrib.auth import logout
 from django.shortcuts import render_to_response
 from django.template import RequestContext
 from django.contrib.auth.decorators import login_required
-from django.utils import simplejson
 from django.contrib.auth.models import User
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.core.exceptions import ObjectDoesNotExist
-from django.contrib.auth.models import User
+
 
 from account.models import UserProfile
 from account.forms import UserForm, UserProfileForm, TeamMemberForm
 import account.util as accountutil
-from text.models import AccessRight
+from document.models import AccessRight
+
+
+from allauth.account.models import EmailAddress
+from allauth.account import signals
+from django.contrib.auth.forms import PasswordChangeForm
+from allauth.account.forms import AddEmailForm
+
+
+from avatar.models import Avatar
+from avatar import views as avatarviews
+from avatar.forms import UploadAvatarForm, DeleteAvatarForm
+from avatar.signals import avatar_updated
+
+
 
 def logout_page(request):
     """
@@ -65,7 +80,6 @@ def password_change_js(request):
     response = {}
     status = 405
     if request.is_ajax() and request.method == 'POST':
-        from django.contrib.auth.forms import PasswordChangeForm
         form = PasswordChangeForm(user=request.user, data=request.POST)
         if form.is_valid():
             status = 200
@@ -75,7 +89,7 @@ def password_change_js(request):
             status = 201
     
     return HttpResponse(
-        simplejson.dumps(response),
+        json.dumps(response),
         content_type = 'application/json; charset=utf8',
         status=status
     )
@@ -88,8 +102,6 @@ def add_email_js(request):
     response = {}
     status = 405
     if request.is_ajax() and request.method == 'POST':
-        from allauth.account.forms import AddEmailForm
-        from allauth.account import signals
         add_email_form = AddEmailForm(request.user, request.POST)
         if add_email_form.is_valid():
             status = 200
@@ -104,7 +116,7 @@ def add_email_js(request):
             response['msg'] = add_email_form.errors
     
     return HttpResponse(
-        simplejson.dumps(response),
+        json.dumps(response),
         content_type = 'application/json; charset=utf8',
         status=status
     )
@@ -115,8 +127,6 @@ def delete_email_js(request):
     status = 405
     email = request.POST["email"]
     if request.is_ajax() and request.method == 'POST':
-        from allauth.account.models import EmailAddress
-        from allauth.account import signals
         response['msg'] = "Removed e-mail address " + email
         status = 200
         try:
@@ -140,7 +150,7 @@ def delete_email_js(request):
             pass
     
     return HttpResponse(
-        simplejson.dumps(response),
+        json.dumps(response),
         content_type = 'application/json; charset=utf8',
         status=status
     )
@@ -151,8 +161,6 @@ def primary_email_js(request):
     status = 405
     email = request.POST["email"]
     if request.is_ajax() and request.method == 'POST':
-        from allauth.account.models import EmailAddress
-        from allauth.account import signals
         try:
             email_address = EmailAddress.objects.get(
                 user=request.user,
@@ -183,7 +191,7 @@ def primary_email_js(request):
             response['msg'] = "e-mail address does not exist"
             
     return HttpResponse(
-        simplejson.dumps(response),
+        json.dumps(response),
         content_type = 'application/json; charset=utf8',
         status=status
     )
@@ -196,10 +204,7 @@ def upload_avatar_js(request):
     response = {}
     status = 405
     if request.is_ajax() and request.method == 'POST':
-        from avatar.models import Avatar
-        from avatar import views as avatarviews
-        from avatar.forms import UploadAvatarForm
-        from avatar.signals import avatar_updated
+
         avatar, avatars = avatarviews._get_avatars(request.user)
         upload_avatar_form = UploadAvatarForm(None, request.FILES, user=request.user)
         if upload_avatar_form.is_valid():
@@ -214,7 +219,7 @@ def upload_avatar_js(request):
             response['avatar'] = accountutil.get_user_avatar_url(request.user)
             status = 200
     return HttpResponse(
-        simplejson.dumps(response),
+        json.dumps(response),
         content_type = 'application/json; charset=utf8',
         status=status
     )
@@ -227,10 +232,6 @@ def delete_avatar_js(request):
     response = {}
     status = 405
     if request.is_ajax() and request.method == 'POST':
-        from avatar.models import Avatar
-        from avatar import views as avatarviews
-        from avatar.forms import DeleteAvatarForm
-        from avatar.signals import avatar_updated
         avatar, avatars = avatarviews._get_avatars(request.user)
         if avatar is None :
             response = 'No avatar exists'
@@ -246,7 +247,7 @@ def delete_avatar_js(request):
             response['avatar'] = accountutil.get_user_avatar_url(request.user)
             status = 200
     return HttpResponse(
-        simplejson.dumps(response),
+        json.dumps(response),
         content_type = 'application/json; charset=utf8',
         status=status
     )
@@ -266,7 +267,7 @@ def delete_user_js(request):
         user.save()
         status = 200
     return HttpResponse(
-        simplejson.dumps(response),
+        json.dumps(response),
         content_type = 'application/json; charset=utf8',
         status=status
     )        
@@ -280,7 +281,7 @@ def save_profile_js(request):
     response = {}
     status = 405
     if request.is_ajax() and request.method == 'POST':
-        form_data = simplejson.loads(request.POST['form_data'])
+        form_data = json.loads(request.POST['form_data'])
         user_object = User.objects.get(pk=request.user.pk)
         user_form = UserForm(form_data['user'], instance=user_object)
         if user_form.is_valid():
@@ -306,7 +307,7 @@ def save_profile_js(request):
         '''
             
     return HttpResponse(
-        simplejson.dumps(response),
+        json.dumps(response),
         content_type = 'application/json; charset=utf8',
         status=status
     )    
@@ -339,17 +340,27 @@ def list_team_members(request):
 @login_required
 def add_team_member_js(request):
     """
-    Add a user as a team member
+    Add a user as a team member of the current user
     """
     response = {}
     status = 405
+    new_member = False
     if request.is_ajax() and request.method == 'POST':
         status = 202
-        try:
-            new_member = User.objects.get(email=request.POST['email'])
-            if new_member.pk is request.user.pk :
-                response['error'] = 'You cannot add yourself into your contacts!'
-            else :
+        user_string = request.POST['user_string']
+        if "@" in user_string and "." in user_string:
+	    email_address = EmailAddress.objects.filter(email=user_string)
+	    if len(email_address) > 0:
+		email_address = email_address[0]
+		new_member = email_address.user
+	else:
+	    users = User.objects.filter(username=user_string)
+	    if len(users) > 0:
+		new_member = users[0]
+	if new_member:
+	    if new_member.pk is request.user.pk:
+                response['error'] = 1 #'You cannot add yourself to your contacts!'
+            else:
                 form_data = {
                     'leader': request.user.pk,
                     'member': new_member.pk
@@ -364,15 +375,14 @@ def add_team_member_js(request):
                         'email': new_member.email,
                         'avatar': the_avatar
                     }
-                    status = 200
+                    status = 201
                 else:
-                    response['error'] = 'This member is already in the contacts!'
-        except ObjectDoesNotExist:
-            response['error'] = 'This e-mail is not registered!'
-            pass
+                    response['error'] = 2 #'This person is already in your contacts!'
+        else:
+	    response['error'] = 3 #'User cannot be found'
         
     return HttpResponse(
-        simplejson.dumps(response),
+        json.dumps(response),
         content_type = 'application/json; charset=utf8',
         status=status
     )
@@ -385,7 +395,7 @@ def change_team_member_roles_js(request):
     response = {}
     status = 405
     if request.is_ajax() and request.method == 'POST':
-        form_data = simplejson.loads(request.POST['form_data'])
+        form_data = json.loads(request.POST['form_data'])
         form_data['leader'] = request.user.pk
         member=User.objects.get(pk=form_data['member'])
         team_member_object_instance = request.user.leader.filter(member=member)[0]
@@ -394,7 +404,7 @@ def change_team_member_roles_js(request):
             team_member_form.save()
             status = 200
     return HttpResponse(
-        simplejson.dumps(response),
+        json.dumps(response),
         content_type = 'application/json; charset=utf8',
         status=status
     )
@@ -411,13 +421,13 @@ def remove_team_member_js(request):
         for former_member in former_members :
             former_member = int(former_member)
             # Revoke all permissions given to this person
-            AccessRight.objects.filter(user_id=former_member,text__owner=request.user).delete()
+            AccessRight.objects.filter(user_id=former_member,document__owner=request.user).delete()
             # Now delete the user from the team
             team_member_object_instance = request.user.leader.filter(member_id=former_member)[0]
             team_member_object_instance.delete()
         status = 200
     return HttpResponse(
-        simplejson.dumps(response),
+        json.dumps(response),
         content_type = 'application/json; charset=utf8',
         status=status
     )    

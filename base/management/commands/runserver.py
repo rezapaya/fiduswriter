@@ -19,8 +19,8 @@
 from datetime import datetime
 from sys import platform
 
-from django.core.management.base import BaseCommand
-from django.utils import translation
+from django.core.management.base import BaseCommand, CommandError
+from django.utils import translation, autoreload
 from django.conf import settings
 from django.core.handlers.wsgi import WSGIHandler
 
@@ -30,7 +30,10 @@ from tornado.ioloop import IOLoop
 from tornado.web import Application, FallbackHandler, RequestHandler, StaticFileHandler
 from tornado.wsgi import WSGIContainer
 
-from text.ws_views import DocumentWS
+if settings.CACHES["default"]["BACKEND"]=="redis_cache.cache.RedisCache":
+    from document.ws_views_redis import DocumentWS
+else:
+    from document.ws_views import DocumentWS
 
 DEFAULT_PORT = "8000"
 
@@ -40,18 +43,25 @@ class Command(BaseCommand):
     help = 'Run django using the tornado server'
 
     def handle(self, port=None, *args, **options):
-        wsgi_app = WSGIContainer(WSGIHandler())
-        tornado_app = Application([(r'/static/(.*)',
-            DjangoStaticFilesHandler, {'default_filename': 'none.img'}),
-            ('/hello-tornado', HelloHandler), 
-            ('/ws/doc/(\w+)', DocumentWS), 
-            ('.*', FallbackHandler, dict(fallback=wsgi_app))])
         if not port:
             self.port = DEFAULT_PORT
         else:
             self.port = port
         if not self.port.isdigit():
-            raise CommandError("%r is not a valid port number." % self.port)
+            raise CommandError("%r is not a valid port number." % self.port)        
+        if settings.DEBUG:
+            autoreload.main(self.inner_run, args, options)
+        else:
+            self.inner_run(*args, **options)
+        
+    def inner_run(self, *args, **options):    
+        wsgi_app = WSGIContainer(WSGIHandler())
+        tornado_app = Application([(r'/static/(.*)',
+            DjangoStaticFilesHandler, {'default_filename': 'none.img'}),
+            (r'/media/(.*)', StaticFileHandler, {'path': settings.MEDIA_ROOT}),
+            ('/hello-tornado', HelloHandler), 
+            ('/ws/doc/(\w+)', DocumentWS), 
+            ('.*', FallbackHandler, dict(fallback=wsgi_app))])
         quit_command = (platform == 'win32') and 'CTRL-BREAK' or 'CONTROL-C'
         
         self.stdout.write("Validating models...\n\n")
@@ -82,6 +92,9 @@ class Command(BaseCommand):
 
 class HelloHandler(RequestHandler):
 
+    def head(self):
+        self.finish()
+        
     def get(self):
         self.write('Hello from tornado')
 

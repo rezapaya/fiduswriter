@@ -20,9 +20,6 @@
 # Django settings for Fidus Writer project. #
 #############################################
 
-# After copying this file to settings.py, adjust the below settings to work 
-# with your setup.
-
 
 import os
 
@@ -37,6 +34,7 @@ SERVER_INFO = {
     'TEST_SERVER': True,
     # This is the contact email that will be shown in various places all over the site.
     'CONTACT_EMAIL': 'mail@email.com',
+    'WS_PORT': False
 }
 
 ADMINS = (
@@ -49,6 +47,7 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': './fiduswriter.sql',
+        'CONN_MAX_AGE': 15
     }
 
 }
@@ -63,6 +62,7 @@ EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 #EMAIL_HOST_PASSWORD = ''
 #EMAIL_PORT = 25
 #EMAIL_SUBJECT_PREFIX = '[Fidus Writer]'
+
 
 # Local time zone for this installation. Choices can be found here:
 # http://en.wikipedia.org/wiki/List_of_tz_zones_by_name
@@ -137,6 +137,8 @@ STATICFILES_FINDERS = (
     'compressor.finders.CompressorFinder',
 )
 
+COMPRESS_OUTPUT_DIR = '.'
+
 # Make this unique, and don't share it with anybody. Change the default string.
 SECRET_KEY = '2ouq2zgw5y-@w+t6!#zf#-z1inigg7$lg3p%8e3kkob1bf$#p4'
 
@@ -186,10 +188,6 @@ TEMPLATE_CONTEXT_PROCESSORS = (
 )
 
 
-FIXTURE_DIRS = (
-     './bibliography/fixture',
-)
-
 # The following are the apps needed by Fidus Writer. The lower part of the list
 # are modules to allow different login options.
 
@@ -204,9 +202,10 @@ INSTALLED_APPS = (
     'django.contrib.admindocs',
     'django.contrib.flatpages',
     'south',
+    'fixturemedia',
     'base',
     'menu',
-    'text',
+    'document',
     'book',
     'bibliography',
     'usermedia',
@@ -216,7 +215,8 @@ INSTALLED_APPS = (
     'allauth.socialaccount',
     'avatar',
     'compressor',
-    'beta'
+    'feedback',
+    'style'
     # If you want to enable one or several of the social network login options 
     # below, make sure you add the authorization keys at:
     # http://SERVER.COM/admin/socialaccount/socialapp/
@@ -305,11 +305,11 @@ AVATAR_MAX_AVATARS_PER_USER = 1
 
 # Location of commonly used Js libraries. Here the local version is given. For deployment a version on the net is better.
 JS_LOCATIONS = {
-    'JQUERY_URL': STATIC_URL + 'js/libs/jquery-1.9.1.js',
-    'JQUERYMIGRATE_URL': STATIC_URL + 'js/libs/jquery-migrate-1.1.1.js',
+    'JQUERY_URL': STATIC_URL + 'js/libs/jquery-2.0.3.js',
+    'JQUERYMIGRATE_URL': STATIC_URL + 'js/libs/jquery-migrate-1.2.1.js',
     'JQUERYUI_URL': STATIC_URL + 'js/libs/jquery-ui-1.10.1.custom.js',
-    'UNDERSCOREJS_URL': STATIC_URL + 'js/libs/underscore-1.4.4-min.js',
-    'MODERNIZR_URL': STATIC_URL + 'js/libs/modernizr.js',
+    'UNDERSCOREJS_URL': STATIC_URL + 'js/libs/underscore-1.5.2.js',
+    'MODERNIZR_URL': STATIC_URL + 'js/libs/modernizr-2.6.3.js',
     'MATHJAX_URL': STATIC_URL + 'js/libs/mathjax/MathJax.js',
     }
 
